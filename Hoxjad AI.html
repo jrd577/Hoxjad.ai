@@ -1,0 +1,697 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Hoxjad AI</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Bangers&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: fixed left rail + sticky top bar; main area swaps between tool views. Brand: deep emerald on green-tinted neutrals, amber for highlights. */
+:root{
+  --bg:#EDF2EF; --surface:#FFFFFF; --surface2:#E1E9E5; --ink:#0D1B17; --muted:#586A63; --line:#CBD7D1;
+  --accent:#0A7A5A; --accent-ink:#FFFFFF; --amber:#D98E04; --danger:#C23B3B;
+  --f-display:"Bricolage Grotesque","DM Sans",system-ui,sans-serif; --f-body:"DM Sans",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0A1210; --surface:#111C19; --surface2:#1A2824; --ink:#E6F0EC; --muted:#8CA29A; --line:#24352F;
+  --accent:#2FD6A1; --accent-ink:#04231A; --amber:#F2B84B; --danger:#F07A7A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0A1210; --surface:#111C19; --surface2:#1A2824; --ink:#E6F0EC; --muted:#8CA29A; --line:#24352F;
+  --accent:#2FD6A1; --accent-ink:#04231A; --amber:#F2B84B; --danger:#F07A7A; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:60}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+.app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:env(safe-area-inset-top,0px);height:100vh;overflow-y:auto;background:var(--surface);border-right:1px solid var(--line);padding:18px 14px 24px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:4px;z-index:40}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:800;font-size:21px;padding:2px 6px 14px;border:0;background:none;text-align:left}
+.brand svg{flex:none}
+.brand small{font-family:var(--f-mono);font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.08em;margin-left:-4px;align-self:flex-start;margin-top:6px}
+.grp{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:14px 10px 4px}
+.nav{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;color:var(--muted);font-weight:500}
+.nav:hover{background:var(--surface2);color:var(--ink)}
+.nav[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+.nav svg{width:18px;height:18px;flex:none}
+.nav .tag{margin-left:auto;font-family:var(--f-mono);font-size:9px;opacity:.7}
+.col{min-width:0}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--bg);display:flex;align-items:center;gap:10px;padding-block:12px;padding-right:max(16px,env(safe-area-inset-right,0px));padding-left:24px;border-bottom:1px solid var(--line)}
+.top .sp{flex:1}
+.btn.menu{display:none}
+.chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-family:var(--f-mono);font-size:12.5px;font-weight:500;white-space:nowrap}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--amber);display:block}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 16px;font-weight:700}
+.btn:hover{border-color:var(--ink)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn.amb{background:var(--amber);border-color:var(--amber);color:#1b1200}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn svg{width:16px;height:16px}
+.icon{width:38px;height:38px;padding:0;border-radius:10px}
+.main{padding-block:28px 64px;padding-left:24px;padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1180px}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.page-h{display:flex;flex-direction:column;gap:6px;margin-bottom:22px}
+.page-h h1{font-size:clamp(26px,3.4vw,36px);font-weight:800}
+.page-h p{margin:0;color:var(--muted);max-width:60ch}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:28px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:30px}
+.hero h1{font-size:clamp(30px,4.6vw,52px);font-weight:800;line-height:1.02}
+.hero p{color:var(--muted);max-width:46ch;margin:12px 0 20px}
+.phone{width:216px;aspect-ratio:9/16;border-radius:22px;border:6px solid var(--ink);overflow:hidden;background:#000;justify-self:center}
+.phone canvas{width:100%;height:100%;display:block}
+.sect{margin-top:30px}
+.sect>h2{font-size:19px;font-weight:700;margin-bottom:12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{display:flex;flex-direction:column;gap:8px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+button.card:hover{border-color:var(--accent)}
+.card .ic{width:38px;height:38px;border-radius:10px;background:var(--surface2);display:grid;place-items:center;color:var(--accent)}
+.card .ic svg{width:20px;height:20px}
+.card h3{font-size:16px;font-weight:700}
+.card p{margin:0;color:var(--muted);font-size:13.5px}
+.pill{align-self:flex-start;font-family:var(--f-mono);font-size:10.5px;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.pill.ok{border-color:var(--accent);color:var(--accent)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.step{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 8px;background:var(--surface);color:var(--muted);font-weight:500}
+.step b{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--surface2);font-family:var(--f-mono);font-size:11px}
+.step.on{color:var(--ink);border-color:var(--accent)}
+.step.on b{background:var(--accent);color:var(--accent-ink)}
+.step.done b{background:var(--amber);color:#1b1200}
+.drop{display:grid;place-items:center;text-align:center;gap:6px;border:2px dashed var(--line);border-radius:14px;padding:34px 16px;cursor:pointer;background:var(--bg)}
+.drop:hover,.drop.over{border-color:var(--accent)}
+.drop svg{width:28px;height:28px;color:var(--accent)}
+.drop small{color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.foot{display:flex;justify-content:space-between;gap:10px;margin-top:20px;flex-wrap:wrap}
+.two{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:22px;align-items:start}
+.two>*{min-width:0}
+.prev{width:100%;max-width:300px;aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:#000;border:1px solid var(--line);justify-self:center}
+.prev canvas,.prev video{width:100%;height:100%;display:block;object-fit:cover}
+.tabs{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.tabs button{border:0;background:var(--surface);padding:7px 18px;color:var(--muted);font-weight:700}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tpls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tpl{border:2px solid transparent;background:#1d1f1e;border-radius:10px;min-height:64px;display:grid;place-items:center;padding:8px;text-align:center;overflow:hidden;line-height:1.05}
+.tpl[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.tpl span{font-size:17px;word-break:break-word}
+.bgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.bg{border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:0;overflow:hidden;text-align:left}
+.bg[aria-pressed="true"]{border-color:var(--accent)}
+.bg canvas{width:100%;display:block;aspect-ratio:9/8;background:#000}
+.bg b{display:block;padding:8px 10px;font-size:13px}
+label.f{display:grid;gap:6px;font-weight:700;font-size:13px;margin-bottom:12px}
+input[type=text],textarea,select{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-weight:400}
+textarea{resize:vertical;min-height:110px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.hint{color:var(--muted);font-size:13px;margin:0}
+.note{border:1px solid var(--line);border-left:3px solid var(--amber);background:var(--surface);border-radius:10px;padding:12px 14px;color:var(--muted);font-size:13.5px}
+.note b{color:var(--ink)}
+video.pv{width:100%;max-height:340px;border-radius:12px;background:#000;margin-top:14px}
+.lst{display:grid;gap:10px}
+.item{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;flex-wrap:wrap}
+.item>div{min-width:0;flex:1}
+.item h3{font-size:15px}
+.item small{color:var(--muted)}
+.item video{width:90px;aspect-ratio:9/16;object-fit:cover;border-radius:8px;background:#000}
+.empty{border:1px dashed var(--line);border-radius:14px;padding:34px 18px;text-align:center;color:var(--muted)}
+.modal{position:fixed;inset:0;z-index:80;background:rgba(5,12,10,.62);display:grid;place-items:center;padding:16px}
+.dlg{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;width:min(560px,100%);max-height:92vh;overflow:auto}
+.gen{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.ring{--p:0;width:112px;height:112px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--surface2) 0);display:grid;place-items:center;flex:none}
+.ring span{width:88px;height:88px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-family:var(--f-mono);font-weight:700;font-size:20px}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0}
+.plan{border:1px solid var(--line);border-radius:12px;padding:14px}
+.plan.hot{border-color:var(--accent);background:var(--bg)}
+.plan b{font-family:var(--f-display);font-size:26px;display:block}
+.plan small{color:var(--muted)}
+.plan ul{padding-left:16px;margin:8px 0 0;color:var(--muted);font-size:13px}
+.gate{position:fixed;inset:0;z-index:100;background:var(--bg);overflow-y:auto;padding-block:calc(28px + env(safe-area-inset-top,0px)) calc(40px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body.locked .app{display:none}
+.gate-in{max-width:1040px;margin:0 auto;display:grid;gap:18px}
+.gate-in .brand{padding:0}
+.gate h1{font-size:clamp(30px,5vw,48px);font-weight:800;line-height:1.05}
+.cyc{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px}
+.sw{width:46px;height:26px;border-radius:999px;border:1px solid var(--line);background:var(--surface2);position:relative;padding:0}
+.sw i{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--ink);transition:transform .15s}
+.sw[aria-checked="true"]{background:var(--accent);border-color:var(--accent)}
+.sw[aria-checked="true"] i{transform:translateX(20px);background:var(--accent-ink)}
+.save{font-family:var(--f-mono);font-size:11px;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:2px 9px}
+.pcs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px;align-items:stretch}
+.pc{position:relative;display:flex;flex-direction:column;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px}
+.pc.hot{border:2px solid var(--accent)}
+.badge{position:absolute;top:-13px;left:24px;background:var(--accent);color:var(--accent-ink);font-family:var(--f-mono);font-size:11px;font-weight:700;border-radius:999px;padding:4px 12px}
+.pc h3{font-size:20px;font-weight:800}
+.price{display:flex;align-items:baseline;gap:6px}
+.price b{font-family:var(--f-display);font-size:54px;font-weight:800;line-height:1}
+.price s{color:var(--muted);font-size:18px}
+.price span{color:var(--muted)}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpis div{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.kpis b{display:block;font-family:var(--f-mono);font-size:15px}
+.kpis small{color:var(--muted)}
+.pc ul{list-style:none;padding:0;margin:0;display:grid;gap:8px;flex:1}
+.pc li{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.pc li svg{width:16px;height:16px;color:var(--accent);flex:none;margin-top:3px}
+.wide{width:100%}
+.dlg.big{width:min(1040px,100%)}
+.trust{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:6px}
+@media (max-width:860px){.pcs{grid-template-columns:minmax(0,1fr)}.pc.hot{order:-1}}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:700;z-index:90;max-width:calc(100vw - 32px)}
+.scrim{display:none}
+.mono{font-family:var(--f-mono)}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;left:0;top:0;bottom:0;height:auto;width:260px;padding-top:calc(18px + env(safe-area-inset-top,0px));transform:translateX(-102%);transition:transform .2s}
+  .side.open{transform:none}
+  .scrim.open{display:block;position:fixed;inset:0;background:rgba(5,12,10,.5);z-index:35}
+  .btn.menu{display:inline-grid;place-items:center}
+  .top{padding-left:max(16px,env(safe-area-inset-left,0px))}
+  .main{padding-left:max(16px,env(safe-area-inset-left,0px))}
+  .hero{grid-template-columns:minmax(0,1fr);padding:22px}
+  .two{grid-template-columns:minmax(0,1fr)}
+  .tpls{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #minChip .lbl{display:none}
+}
+@media (prefers-reduced-motion:reduce){.side{transition:none}}
+</style>
+
+<div class="app">
+  <aside class="side" id="side" aria-label="Main navigation"></aside>
+  <div class="scrim" id="scrim"></div>
+  <div class="col">
+    <header class="top">
+      <button class="btn icon menu" id="menuBtn" aria-label="Open menu"></button>
+      <div class="sp"></div>
+      <button class="btn icon" id="themeBtn" aria-label="Switch light or dark theme"></button>
+      <span class="chip" id="minChip"><i></i><span id="minNum">0</span><span class="lbl">&nbsp;export minutes</span></span>
+      <button class="btn pri" id="upgBtn">Upgrade</button>
+    </header>
+    <main class="main" id="view"></main>
+  </div>
+</div>
+<div class="gate" id="gate" hidden></div>
+<div class="modal" id="modal" hidden></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const IC={
+ home:"M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z",
+ cut:"M6 3a3 3 0 1 0 .01 0zM6 15a3 3 0 1 0 .01 0zM8 8l12 11M8 16L20 5",
+ folder:"M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
+ download:"M12 3v12m0 0l-4-4m4 4l4-4M4 21h16",
+ layers:"M12 3l9 5-9 5-9-5zM3 13l9 5 9-5",
+ split:"M4 4h16v16H4zM4 12h16",
+ book:"M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM8 20V7",
+ chat:"M4 5h16v11H9l-5 4z",
+ blur:"M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z",
+ spark:"M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z",
+ mic:"M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3zM6 11a6 6 0 0 0 12 0M12 17v4",
+ image:"M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4M9 9h.01",
+ user:"M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0",
+ bulb:"M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10c1 1 1 2 1 3h6c0-1 0-2 1-3a6 6 0 0 0-4-10z",
+ link:"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1",
+ gift:"M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7c-3 0-4-4-1-4s2 4 1 4zM12 7c3 0 4-4 1-4s-2 4-1 4z",
+ people:"M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2 20a7 7 0 0 1 14 0M17 4a3.5 3.5 0 0 1 0 7M22 20a7 7 0 0 0-4-6.3",
+ play:"M7 4l13 8-13 8z",
+ upload:"M12 16V4m0 0l-4 4m4-4l4 4M4 20h16",
+ menu:"M4 6h16M4 12h16M4 18h16",
+ moon:"M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z",
+ check:"M5 12l5 5 9-10",
+ x:"M6 6l12 12M18 6L6 18"
+};
+const ic=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[n]}"/></svg>`;
+let toastT;
+function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3200)}
+const hs=n=>{const s=Math.sin(n*127.1+311.7)*43758.5453;return s-Math.floor(s)};
+const fmt=s=>{s=Math.round(s);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
+
+/* ---------- state ---------- */
+let minutes=store.get("hx_min",0);
+let projects=store.get("hx_proj",[]);
+const exportsList=[], assets=[], W={};
+let cleanups=[];
+function runCleanups(){cleanups.forEach(f=>{try{f()}catch(e){}});cleanups=[]}
+function setMinutes(v){minutes=Math.max(0,v);store.set("hx_min",minutes);$("#minNum").textContent=Math.floor(minutes)}
+
+/* ---------- procedural backgrounds (stand-in for gameplay loops) ---------- */
+const BG={
+ runner:{name:"Rooftop run",draw(c,w,h,t){
+  const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,"#2b1a5c");g.addColorStop(1,"#ff8a5c");c.fillStyle=g;c.fillRect(0,0,w,h);
+  c.fillStyle="#ffd27a";c.beginPath();c.arc(w*.76,h*.26,h*.09,0,7);c.fill();
+  const cols=["#3a2a6e","#2a1f52","#171236"];
+  for(let l=0;l<3;l++){const bw=w*(.2+l*.07),sp=40+l*110,off=(t*sp)%bw,base=Math.floor(t*sp/bw);
+   c.fillStyle=cols[l];
+   for(let k=-1;k<w/bw+2;k++){const i=base+k,hh=h*(.22+.28*hs(i*3.1+l*9))+l*h*.07;c.fillRect(Math.round(k*bw-off),h-hh,Math.ceil(bw)-3,hh)}}
+  const by=Math.abs(Math.sin(t*7))*h*.06;c.fillStyle="#fff";c.fillRect(w*.3,h*.74-by,w*.045,h*.1);c.beginPath();c.arc(w*.322,h*.72-by,w*.03,0,7);c.fill();
+ }},
+ slime:{name:"Slime press",draw(c,w,h,t){
+  c.fillStyle="#101820";c.fillRect(0,0,w,h);
+  for(let i=0;i<7;i++){const x=w*(.5+.34*Math.sin(t*.7+i*2.1)),y=h*(.5+.36*Math.cos(t*.55+i*1.7)),r=h*(.2+.05*Math.sin(t+i));
+   const g=c.createRadialGradient(x,y,0,x,y,r);const hue=(i*52+t*18)%360;g.addColorStop(0,`hsla(${hue},90%,62%,.95)`);g.addColorStop(1,`hsla(${hue},90%,50%,0)`);c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,7);c.fill()}
+ }},
+ neon:{name:"Neon road",draw(c,w,h,t){
+  const hor=h*.46,g=c.createLinearGradient(0,0,0,hor);g.addColorStop(0,"#12002b");g.addColorStop(1,"#4a0d75");c.fillStyle=g;c.fillRect(0,0,w,h);
+  const s=c.createLinearGradient(0,hor-h*.2,0,hor);s.addColorStop(0,"#ffc400");s.addColorStop(1,"#ff2a8a");c.fillStyle=s;c.beginPath();c.arc(w/2,hor,h*.2,Math.PI,0);c.fill();
+  c.fillStyle="#0b0018";c.fillRect(0,hor,w,h-hor);c.strokeStyle="#2FD6A1";c.lineWidth=2;
+  for(let k=0;k<12;k++){const z=((k+t*1.4)%12)/12,y=hor+(h-hor)*z*z;c.globalAlpha=.25+z*.75;c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke()}
+  c.globalAlpha=.7;for(let k=-8;k<=8;k++){c.beginPath();c.moveTo(w/2,hor);c.lineTo(w/2+k*w*.22,h);c.stroke()}c.globalAlpha=1;
+ }},
+ waves:{name:"Liquid waves",draw(c,w,h,t){
+  const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,"#06231d");g.addColorStop(1,"#0b4a3c");c.fillStyle=g;c.fillRect(0,0,w,h);
+  for(let l=0;l<5;l++){c.beginPath();c.moveTo(0,h);for(let x=0;x<=w;x+=8){c.lineTo(x,h*(.3+l*.13)+Math.sin(x*.012+t*(.8+l*.3)+l*2)*h*.045)}c.lineTo(w,h);c.closePath();
+   c.fillStyle=l%2?`rgba(242,184,75,${.18+l*.04})`:`rgba(47,214,161,${.2+l*.05})`;c.fill()}
+ }}
+};
+function clipRect(c,x,y,w,h,fn){c.save();c.beginPath();c.rect(x,y,w,h);c.clip();c.translate(x,y);fn(c,w,h);c.restore()}
+function drawCover(c,src,sw,sh,x,y,w,h){if(!sw||!sh)return;const r=Math.max(w/sw,h/sh),dw=sw*r,dh=sh*r;clipRect(c,x,y,w,h,cc=>cc.drawImage(src,(w-dw)/2,(h-dh)/2,dw,dh))}
+function drawSample(c,x,y,w,h,t){clipRect(c,x,y,w,h,(c,w,h)=>{
+  const g=c.createLinearGradient(0,0,w,h);g.addColorStop(0,"#0f2f27");g.addColorStop(1,"#0a1815");c.fillStyle=g;c.fillRect(0,0,w,h);
+  c.fillStyle="rgba(255,255,255,.07)";c.fillRect(w*.08,h*.1,w*.84,h*.12);
+  c.fillStyle="#2FD6A1";c.font=`700 ${h*.045}px "JetBrains Mono",monospace`;c.textBaseline="middle";c.textAlign="left";c.fillText("SAMPLE CLIP",w*.11,h*.16);
+  for(let i=0;i<14;i++){const bh=h*(.12+.4*Math.abs(Math.sin(t*2.2+i*.7)));c.fillStyle=i%3?"#2FD6A1":"#F2B84B";c.fillRect(w*.08+i*w*.06,h*.88-bh,w*.04,bh)}
+  c.strokeStyle="rgba(255,255,255,.5)";c.lineWidth=4;c.beginPath();c.arc(w*.5,h*.42,h*(.1+.01*Math.sin(t*4)),0,7);c.stroke();
+ })}
+
+/* ---------- subtitle templates ---------- */
+const TPL=[
+ {n:"Bold White",font:"Anton",fill:"#fff",stroke:"#000",sw:10,up:1},
+ {n:"Yellow Punch",font:"Anton",fill:"#FFE14A",stroke:"#000",sw:10,up:1},
+ {n:"Clean Sans",font:"DM Sans",weight:800,fill:"#fff",shadow:1},
+ {n:"Neon Mint",font:"Archivo Black",fill:"#3DFFB5",stroke:"#04261B",sw:8,up:1,size:64},
+ {n:"Red Alert",font:"Archivo Black",fill:"#FF4D4D",stroke:"#fff",sw:8,up:1,size:64},
+ {n:"Comic Pop",font:"Bangers",fill:"#fff",stroke:"#7A1FFF",sw:12,up:1,size:84},
+ {n:"Mono Tag",font:"JetBrains Mono",weight:700,fill:"#B6FF3B",stroke:"#000",sw:8,size:60},
+ {n:"Pop Yellow",anim:1,font:"Anton",fill:"#fff",act:"#FFE14A",stroke:"#000",sw:10,up:1},
+ {n:"Pop Mint",anim:1,font:"Archivo Black",fill:"#fff",act:"#2FD6A1",stroke:"#000",sw:8,up:1,size:64},
+ {n:"Pop Red",anim:1,font:"Anton",fill:"#fff",act:"#FF4D4D",stroke:"#000",sw:10,up:1},
+ {n:"Pop Violet",anim:1,font:"Bangers",fill:"#fff",act:"#B07CFF",stroke:"#000",sw:10,up:1,size:84},
+ {n:"Pop Orange",anim:1,font:"Archivo Black",fill:"#fff",act:"#FF9A1F",stroke:"#000",sw:8,up:1,size:64},
+ {n:"Highlighter",anim:1,font:"Anton",fill:"#fff",act:"#111",box:"#FFE14A",stroke:"#000",sw:8,up:1},
+ {n:"Karaoke Blue",anim:1,font:"DM Sans",weight:800,fill:"#fff",act:"#55B8FF",shadow:1},
+ {n:"Sunset",anim:1,font:"Anton",fill:"#fff",act:"#FF6B8B",stroke:"#000",sw:10,up:1}
+];
+const FONTS=["Anton","Archivo Black","Bangers","DM Sans","JetBrains Mono"];
+async function loadFonts(){try{await Promise.all(FONTS.map(f=>document.fonts.load(`700 40px "${f}"`)))}catch(e){}}
+const fontCss=t=>`${t.weight||400} ${t.size||76}px "${t.font}",Impact,sans-serif`;
+
+function drawCaption(c,words,tpl,t,dur,cy){
+  if(!words.length)return;
+  const G=3,per=dur/words.length,tt=t%dur,idx=Math.min(words.length-1,Math.floor(tt/per)),gs=Math.floor(idx/G)*G;
+  const grp=words.slice(gs,gs+G).map(w=>tpl.up?w.toUpperCase():w);
+  let size=tpl.size||76;
+  const meas=()=>{c.font=fontCss({...tpl,size});return grp.map(w=>c.measureText(w).width)};
+  let ws=meas();const gap=size*.28;let total=ws.reduce((a,b)=>a+b,0)+gap*(grp.length-1);
+  if(total>650){size*=650/total;ws=meas();total=ws.reduce((a,b)=>a+b,0)+gap*(grp.length-1)}
+  c.textBaseline="middle";c.textAlign="center";c.lineJoin="round";
+  let x=360-total/2;
+  grp.forEach((w,i)=>{
+    const active=tpl.anim&&(gs+i===idx),cx=x+ws[i]/2;
+    const local=(tt-idx*per)/per,sc=active?1+.2*Math.max(0,1-local*5):1;
+    c.save();c.translate(cx,cy);c.scale(sc,sc);
+    if(active&&tpl.box){c.fillStyle=tpl.box;const bw=ws[i]+size*.3,bh=size*1.15;c.fillRect(-bw/2,-bh/2,bw,bh)}
+    if(tpl.shadow){c.shadowColor="rgba(0,0,0,.75)";c.shadowBlur=14;c.shadowOffsetY=4}
+    if(tpl.stroke&&!(active&&tpl.box)){c.strokeStyle=tpl.stroke;c.lineWidth=tpl.sw||8;c.strokeText(w,0,0)}
+    c.fillStyle=active&&tpl.act?tpl.act:tpl.fill;c.fillText(w,0,0);c.restore();
+    x+=ws[i]+gap});
+}
+
+/* ---------- scenes: one draw function drives live preview and export ---------- */
+function mkVideo(url,loop){const v=document.createElement("video");v.src=url;v.playsInline=true;v.loop=loop;v.muted=true;v.preload="auto";return v}
+function makeScene(kind,S,exp){
+  const top=(!S.sample&&S.url)?mkVideo(S.url,!exp):null;
+  const bgv=(kind==="split"&&S.bg==="upload"&&S.bgUrl)?mkVideo(S.bgUrl,true):null;
+  const dur=()=>S.sample?8:Math.max(1,Math.min(60,S.dur||8));
+  return{top,dur:dur(),
+   draw(c,t){
+     c.fillStyle="#000";c.fillRect(0,0,720,1280);
+     const tm=top?top.currentTime:t,words=(S.script||"").trim().split(/\s+/).filter(Boolean),tpl=TPL[S.tpl]||TPL[0],d=dur();
+     if(kind==="split"){
+       if(top)drawCover(c,top,top.videoWidth,top.videoHeight,0,0,720,640);else drawSample(c,0,0,720,640,t);
+       if(bgv)drawCover(c,bgv,bgv.videoWidth,bgv.videoHeight,0,640,720,640);
+       else clipRect(c,0,640,720,640,(cc,w,h)=>BG[S.bg in BG?S.bg:"runner"].draw(cc,w,h,t));
+       c.fillStyle="rgba(255,255,255,.9)";c.fillRect(0,638,720,4);
+       drawCaption(c,words,tpl,tm,d,640);
+     }else if(kind==="editor"){
+       if(top)drawCover(c,top,top.videoWidth,top.videoHeight,0,0,720,1280);else drawSample(c,0,0,720,1280,t);
+       drawCaption(c,words,tpl,tm,d,980);
+     }else{
+       if(top){c.save();c.filter=`blur(${S.blur}px)`;drawCover(c,top,top.videoWidth,top.videoHeight,-60,-60,840,1400);c.restore();
+         c.fillStyle="rgba(0,0,0,.28)";c.fillRect(0,0,720,1280);
+         const vw=top.videoWidth||16,vh=top.videoHeight||9,r=Math.min(720/vw,1280/vh),dw=vw*r,dh=vh*r;c.drawImage(top,(720-dw)/2,(1280-dh)/2,dw,dh)}
+       else{clipRect(c,0,0,720,1280,(cc,w,h)=>BG.waves.draw(cc,w,h,t));drawSample(c,0,430,720,420,t)}
+       drawCaption(c,words,tpl,tm,d,1040);
+     }
+   },
+   async start(){for(const v of [top,bgv]){if(!v)continue;await new Promise(r=>{if(v.readyState>=2)r();else{v.onloadeddata=r;v.onerror=r;setTimeout(r,4000)}});v.play().catch(()=>{})}},
+   stop(){for(const v of [top,bgv]){if(v){v.pause();v.removeAttribute("src");v.load()}}}};
+}
+function makeTextsScene(S){
+  const lines=()=>S.lines.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{const m=l.match(/^(me|them)\s*:\s*(.*)$/i);return m?{me:m[1].toLowerCase()==="me",t:m[2]}:{me:false,t:l}});
+  const STEP=1.5;
+  return{dur:Math.max(4,lines().length*STEP+1.5),top:null,
+   draw(c,t){
+     const L=lines(),loop=(t%Math.max(4,L.length*STEP+1.5));
+     c.fillStyle="#000";c.fillRect(0,0,720,1280);
+     clipRect(c,0,0,720,1280,(cc,w,h)=>BG[S.bg in BG?S.bg:"neon"].draw(cc,w,h,t));
+     c.fillStyle="rgba(8,14,12,.72)";c.fillRect(0,0,720,1280);
+     c.fillStyle="rgba(255,255,255,.1)";c.fillRect(0,150,720,110);
+     c.fillStyle="#2FD6A1";c.beginPath();c.arc(90,205,34,0,7);c.fill();
+     c.fillStyle="#04231A";c.font='700 34px "DM Sans",sans-serif';c.textAlign="center";c.textBaseline="middle";c.fillText((S.contact||"?")[0].toUpperCase(),90,206);
+     c.fillStyle="#fff";c.textAlign="left";c.font='700 34px "DM Sans",sans-serif';c.fillText(S.contact||"Contact",146,205);
+     let y=310;c.font='500 34px "DM Sans",sans-serif';
+     L.forEach((m,i)=>{
+       const at=i*STEP;if(loop<at)return;const k=Math.min(1,(loop-at)/.25),sc=.85+.15*Math.min(1,k*1.2);
+       const maxW=470,words=m.t.split(" "),rows=[];let cur="";
+       words.forEach(w=>{const test=cur?cur+" "+w:w;if(c.measureText(test).width>maxW&&cur){rows.push(cur);cur=w}else cur=test});rows.push(cur);
+       const bw=Math.min(maxW,Math.max(...rows.map(r=>c.measureText(r).width)))+44,bh=rows.length*44+30,bx=m.me?700-bw:20;
+       c.save();c.globalAlpha=k;c.translate(bx+(m.me?bw:0),y+bh);c.scale(sc,sc);c.translate(-(bx+(m.me?bw:0)),-(y+bh));
+       c.fillStyle=m.me?"#0A7A5A":"#2b3531";c.beginPath();c.roundRect(bx,y,bw,bh,28);c.fill();
+       c.fillStyle="#fff";c.textAlign="left";rows.forEach((r,j)=>c.fillText(r,bx+22,y+15+22+j*44));c.restore();
+       y+=bh+18});
+   },
+   async start(){},stop(){}};
+}
+function startPreview(canvas,scene){
+  const ctx=canvas.getContext("2d"),k=canvas.width/720;let live=true,raf;const t0=performance.now();
+  scene.start();
+  (function f(){if(!live)return;ctx.setTransform(k,0,0,k,0,0);try{scene.draw(ctx,(performance.now()-t0)/1000)}catch(e){}raf=requestAnimationFrame(f)})();
+  cleanups.push(()=>{live=false;cancelAnimationFrame(raf);scene.stop()});
+}
+
+/* ---------- export: records the canvas to a video file in the browser ---------- */
+async function recordScene(scene,onp){
+  const cv=document.createElement("canvas");cv.width=720;cv.height=1280;const ctx=cv.getContext("2d");
+  const stream=cv.captureStream(30);let ac=null;
+  await loadFonts();
+  if(scene.top){
+    try{ac=new (window.AudioContext||window.webkitAudioContext)();const src=ac.createMediaElementSource(scene.top),dest=ac.createMediaStreamDestination();src.connect(dest);scene.top.muted=false;dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t))}catch(e){ac=null}
+    scene.top.loop=false;
+  }
+  await scene.start();
+  const mime=["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"].find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m));
+  if(!mime)throw new Error("This browser cannot record video. Try Chrome, Edge or Firefox.");
+  const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:4e6}),chunks=[];
+  rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+  const done=new Promise(r=>rec.onstop=r);
+  const dur=scene.dur;rec.start(300);const t0=performance.now();
+  await new Promise(res=>{(function loop(){const t=(performance.now()-t0)/1000;ctx.setTransform(1,0,0,1,0,0);scene.draw(ctx,t);onp(Math.min(1,t/dur));
+    if(t>=dur||(scene.top&&scene.top.ended)){res();return}requestAnimationFrame(loop)})()});
+  rec.stop();await done;scene.stop();if(ac)ac.close().catch(()=>{});
+  return{blob:new Blob(chunks,{type:"video/webm"}),dur};
+}
+function showModal(html){const m=$("#modal");m.innerHTML=`<div class="dlg" role="dialog" aria-modal="true">${html}</div>`;m.hidden=false}
+function hideModal(){$("#modal").hidden=true;$("#modal").innerHTML=""}
+async function generate(scene,title,type){
+  const need=scene.dur/60;
+  if(minutes<need){toast("Not enough export minutes. Upgrade your plan to add more.");return null}
+  showModal(`<div class="gen"><div class="ring" id="ring"><span id="pct">0%</span></div><div style="flex:1;min-width:200px"><h2 style="font-size:24px">Generating your video</h2><p class="hint" style="margin-top:6px">Rendering ${Math.round(scene.dur)} seconds in real time. Keep this tab open until it finishes.</p></div></div>`);
+  try{
+    const r=await recordScene(scene,p=>{const v=Math.round(p*100);const ring=$("#ring"),pc=$("#pct");if(ring){ring.style.setProperty("--p",v);pc.textContent=v+"%"}});
+    const url=URL.createObjectURL(r.blob),name=`${title.replace(/[^\w]+/g,"-").toLowerCase()}-${Date.now().toString(36)}.webm`;
+    exportsList.unshift({name,blob:r.blob,url,dur:r.dur,type,size:r.blob.size,date:Date.now()});
+    projects.unshift({id:Date.now(),title,type,dur:Math.round(r.dur),date:Date.now()});projects=projects.slice(0,50);store.set("hx_proj",projects);
+    setMinutes(minutes-need);hideModal();return exportsList[0];
+  }catch(e){hideModal();toast(e.message||"Export failed. Try a shorter clip.");return null}
+}
+
+/* ---------- navigation ---------- */
+const NAV=[
+ [null,[["dashboard","Dashboard","home"]]],
+ ["Workspace",[["editor","Quick Editor","cut"],["projects","My Projects","folder"],["exports","My Exports","download"],["assets","My Assets","layers"]]],
+ ["Create",[["split","Split Video","split"],["story","Story Video","book"],["texts","Texts Video","chat"],["blur","Blur Video","blur"],["gpt","ChatGPT Video","spark"],["voicevid","Voiceover Video","mic"]]],
+ ["Tools",[["aiimg","AI Images","image"],["voice","AI Voiceover","mic"],["avatar","AI Avatars","user"],["brain","AI Brainstorm","bulb"],["ytdl","YT Downloader","link"],["ttdl","TikTok Downloader","link"]]],
+ ["More",[["affiliate","Affiliate","gift"]]]
+];
+const LIVE=new Set(["split","editor","blur","texts","voice","brain","projects","exports","assets","affiliate","dashboard"]);
+const TITLES={};NAV.forEach(([g,it])=>it.forEach(([id,l])=>TITLES[id]=l));
+let cur="dashboard";
+function drawNav(){
+  $("#side").innerHTML=`<button class="brand" data-go="dashboard" aria-label="Hoxjad AI home"><svg width="30" height="30" viewBox="0 0 32 32" fill="none"><path d="M16 2l12 7v14l-12 7L4 23V9z" fill="var(--accent)"/><path d="M11 10v12M21 10v12M11 16h10" stroke="var(--accent-ink)" stroke-width="3" stroke-linecap="round"/></svg>Hoxjad<small>AI</small></button>`+
+   NAV.map(([g,it])=>(g?`<div class="grp">${g}</div>`:"")+it.map(([id,l,i])=>`<button class="nav" data-go="${id}" ${id===cur?'aria-current="page"':""}>${ic(i)}<span>${l}</span>${LIVE.has(id)?"":'<span class="tag">API</span>'}</button>`).join("")).join("");
+}
+function go(id){
+  runCleanups();cur=id;drawNav();$("#side").classList.remove("open");$("#scrim").classList.remove("open");
+  (VIEWS[id]||VIEWS.backend)(id);window.scrollTo(0,0);
+}
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-go]");if(b){go(b.dataset.go);return}
+  const sv=e.target.closest("[data-save]");if(!sv)return;
+  const x=exportsList.find(v=>v.name===sv.dataset.save);if(!x)return;
+  let d=null;try{d=window.claude&&await window.claude.use("downloads")}catch(_){}
+  if(d){try{await d.save({filename:x.name,data:x.blob});toast("Saved "+x.name)}catch(er){if(er&&er.code!=="declined")toast("Saving is blocked here. Press and hold the video and choose Save video.")}}
+  else{const a=document.createElement("a");a.href=x.url;a.download=x.name;document.body.appendChild(a);a.click();a.remove()}
+});
+
+/* ---------- views ---------- */
+const view=()=>$("#view");
+const VIEWS={};
+const head=(t,p)=>`<div class="page-h"><span class="eyebrow">Hoxjad AI</span><h1>${t}</h1>${p?`<p>${p}</p>`:""}</div>`;
+
+VIEWS.dashboard=()=>{
+  const cards=[
+   ["split","Split Video","Stack a clip over a looping background, add captions, export 9:16.","split",1],
+   ["editor","Quick Editor","Fill the frame, add animated captions to any video.","cut",1],
+   ["blur","Blur Video","Turn a horizontal video into vertical with a blurred backdrop.","blur",1],
+   ["texts","Texts Video","Chat-story videos from a short script of messages.","chat",1],
+   ["story","Story Video","Write a script from a topic and cut it to visuals.","book",0],
+   ["gpt","ChatGPT Video","Text-to-image scenes stitched into a video.","spark",0],
+   ["voice","AI Voiceover","Read a script aloud and preview voices.","mic",1],
+   ["aiimg","AI Images","Generate images from a prompt.","image",0],
+   ["brain","AI Brainstorm","Hook lines for any niche, ready to film.","bulb",1]];
+  view().innerHTML=`<section class="hero"><div><span class="eyebrow">Short-form studio</span><h1 style="margin-top:8px">Edit short-form in minutes.</h1><p>Upload a clip, pick a background and a caption style, and export a vertical video without leaving the browser.</p><div class="row"><button class="btn pri" data-go="split">${ic("play")} Start creating</button><button class="btn" data-go="editor">Open Quick Editor</button></div></div><div class="phone"><canvas id="heroCv" width="432" height="768"></canvas></div></section>
+  <section class="sect"><h2>What you can make</h2><div class="cards">${cards.map(([id,t,d,i,live])=>`<button class="card" data-go="${id}"><span class="ic">${ic(i)}</span><h3>${t}</h3><p>${d}</p><span class="pill ${live?"ok":""}">${live?"Works in your browser":"Needs an AI service"}</span></button>`).join("")}</div></section>`;
+  const S={sample:true,bg:"runner",tpl:7,script:"Edit short form videos in minutes with Hoxjad AI",dur:8};
+  startPreview($("#heroCv"),makeScene("split",S,false));
+};
+
+/* wizard for split / editor / blur */
+function defaults(kind){return{step:0,sample:false,url:null,name:"",dur:8,bg:"runner",bgUrl:null,bgName:"",tpl:7,tab:"anim",script:"Hoxjad AI makes short form editing quick. Drop in your clip, pick a style and export.",blur:28,result:null}}
+const META={
+ split:{t:"Split Video",p:"Your clip on top, a looping background below, captions across the seam.",steps:["Upload","Background","Subtitles"]},
+ editor:{t:"Quick Editor",p:"Fill the vertical frame with your clip and burn in animated captions.",steps:["Upload","Subtitles"]},
+ blur:{t:"Blur Video",p:"Keep the full horizontal clip in the middle and blur a copy behind it.",steps:["Upload","Subtitles"]}
+};
+function wizard(kind){
+  const S=W[kind]||(W[kind]=defaults(kind)),M=META[kind];
+  function frame(inner){
+    view().innerHTML=head(M.t,M.p)+(S.result?"":`<div class="steps">${M.steps.map((s,i)=>`<span class="step ${i===S.step?"on":""} ${i<S.step?"done":""}"><b>${i<S.step?"✓":i+1}</b>${s}</span>`).join("")}</div>`)+inner;
+  }
+  function show(){
+    runCleanups();
+    if(S.result)return resultView();
+    const name=M.steps[S.step];
+    if(name==="Upload")uploadStep();else if(name==="Background")bgStep();else subStep();
+  }
+  function setFile(f){
+    if(!f||!f.type.startsWith("video/")){toast("Choose a video file (MP4, MOV or WebM).");return}
+    if(S.url)URL.revokeObjectURL(S.url);
+    S.url=URL.createObjectURL(f);S.name=f.name;S.sample=false;
+    assets.unshift({name:f.name,url:S.url,type:"Video",size:f.size});
+    const v=document.createElement("video");v.preload="metadata";v.src=S.url;
+    v.onloadedmetadata=()=>{S.dur=v.duration||8;if(S.dur>60)toast("Only the first 60 seconds will be exported.");show()};
+    v.onerror=()=>{toast("This browser cannot read that video format. Try an MP4 or WebM file.");S.url=null;show()};
+  }
+  function uploadStep(){
+    const has=S.url||S.sample;
+    frame(`<div class="panel"><div class="drop" id="drop" tabindex="0" role="button" aria-label="Upload a video">${ic("upload")}<b>Drop a video here or click to browse</b><small>MP4, MOV or WebM. Up to 60 seconds are exported.</small></div><input type="file" id="file" accept="video/*" hidden>
+    ${S.url?`<video class="pv" src="${S.url}" controls muted playsinline></video><p class="hint" style="margin-top:8px">${esc(S.name)} · ${fmt(S.dur)}</p>`:""}
+    ${S.sample?`<p class="hint" style="margin-top:14px">Using the built-in sample clip (8 seconds). Upload your own any time.</p>`:""}
+    ${kind==="blur"?`<label class="f" style="margin-top:16px">Backdrop blur: <span class="mono" id="blv">${S.blur}px</span><input type="range" id="blur" min="6" max="60" value="${S.blur}"></label>`:""}
+    <div class="row" style="margin-top:14px"><button class="btn" id="useSample">Use sample clip</button></div>
+    <div class="foot"><span></span><button class="btn pri" id="next" ${has?"":"disabled"}>Next</button></div></div>`);
+    const drop=$("#drop"),file=$("#file");
+    drop.onclick=()=>file.click();drop.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();file.click()}};
+    file.onchange=()=>setFile(file.files[0]);
+    ["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over")}));
+    ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over")}));
+    drop.addEventListener("drop",e=>setFile(e.dataTransfer.files[0]));
+    $("#useSample").onclick=()=>{S.sample=true;S.url=null;S.dur=8;show()};
+    if($("#blur"))$("#blur").oninput=e=>{S.blur=+e.target.value;$("#blv").textContent=S.blur+"px"};
+    $("#next").onclick=()=>{S.step++;show()};
+  }
+  function bgStep(){
+    frame(`<div class="panel"><div class="bgs">${Object.entries(BG).map(([id,b])=>`<button class="bg" data-bg="${id}" aria-pressed="${S.bg===id}"><canvas width="240" height="213"></canvas><b>${b.name}</b></button>`).join("")}
+    <button class="bg" data-bg="upload" aria-pressed="${S.bg==="upload"}"><div style="aspect-ratio:9/8;display:grid;place-items:center;background:var(--bg);color:var(--accent)">${ic("upload")}</div><b>${S.bgName?esc(S.bgName):"Upload your own"}</b></button></div>
+    <input type="file" id="bgfile" accept="video/*" hidden><p class="hint" style="margin-top:12px">Backgrounds loop under your clip. Upload any gameplay or satisfying footage you have rights to use.</p>
+    <div class="foot"><button class="btn" id="back">Back</button><button class="btn pri" id="next">Next</button></div></div>`);
+    $$(".bg canvas").forEach((cv,i)=>{const id=Object.keys(BG)[i];cv.getContext("2d").scale(240/720,240/720);BG[id].draw(cv.getContext("2d"),720,640,2.2)});
+    $$(".bg").forEach(b=>b.onclick=()=>{
+      if(b.dataset.bg==="upload"){$("#bgfile").click();return}
+      S.bg=b.dataset.bg;$$(".bg").forEach(x=>x.setAttribute("aria-pressed",x===b))});
+    $("#bgfile").onchange=e=>{const f=e.target.files[0];if(!f)return;if(S.bgUrl)URL.revokeObjectURL(S.bgUrl);S.bgUrl=URL.createObjectURL(f);S.bgName=f.name;S.bg="upload";assets.unshift({name:f.name,url:S.bgUrl,type:"Background",size:f.size});show()};
+    $("#back").onclick=()=>{S.step--;show()};$("#next").onclick=()=>{S.step++;show()};
+  }
+  function subStep(){
+    const list=TPL.map((t,i)=>[t,i]).filter(([t])=>!!t.anim===(S.tab==="anim"));
+    frame(`<div class="panel"><div class="two"><div>
+      <div class="tabs" role="group" aria-label="Caption type"><button data-tab="still" aria-pressed="${S.tab==="still"}">Still</button><button data-tab="anim" aria-pressed="${S.tab==="anim"}">Animated</button></div>
+      <div class="tpls">${list.map(([t,i])=>`<button class="tpl" data-i="${i}" aria-pressed="${S.tpl===i}" aria-label="${t.n}"><span style="font-family:'${t.font}',Impact,sans-serif;font-weight:${t.weight||400};color:${t.fill};${t.stroke?`-webkit-text-stroke:${Math.max(2,(t.sw||8)/4)}px ${t.stroke};paint-order:stroke fill;`:""}${t.shadow?"text-shadow:0 2px 6px rgba(0,0,0,.8);":""}${t.up?"text-transform:uppercase;":""}">${t.act?`The <span style="color:${t.act};${t.box?`background:${t.box};padding:0 3px`:""}">quick</span> fox`:"The quick fox"}</span></button>`).join("")}</div>
+      <label class="f" style="margin-top:18px">Captions script<textarea id="script" placeholder="Type or paste what is said in the video">${esc(S.script)}</textarea></label>
+      <p class="hint">Words appear three at a time and are spread evenly over the clip, so write the script in the order it is spoken.</p></div>
+      <div class="prev"><canvas id="pv" width="300" height="533"></canvas></div></div>
+      <div class="foot"><button class="btn" id="back">Back</button><button class="btn pri" id="gen">${ic("spark")} Generate video</button></div></div>`);
+    loadFonts();
+    startPreview($("#pv"),makeScene(kind,S,false));
+    $$(".tabs button").forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;if(!!TPL[S.tpl].anim!==(S.tab==="anim"))S.tpl=TPL.findIndex(t=>!!t.anim===(S.tab==="anim"));show()});
+    $$(".tpl").forEach(b=>b.onclick=()=>{S.tpl=+b.dataset.i;$$(".tpl").forEach(x=>x.setAttribute("aria-pressed",x===b))});
+    $("#script").oninput=e=>S.script=e.target.value;
+    $("#back").onclick=()=>{S.step--;show()};
+    $("#gen").onclick=async()=>{runCleanups();const r=await generate(makeScene(kind,S,true),S.name?S.name.replace(/\.[^.]+$/,""):M.t+" sample",M.t);if(r){S.result=r;show()}else show()};
+  }
+  function resultView(){
+    const r=S.result;
+    frame(`<div class="panel"><h2 style="font-size:22px;margin-bottom:12px">Your video is ready</h2><div class="two"><div><p class="hint">Saved to My Exports. ${fmt(r.dur)} · ${(r.size/1048576).toFixed(1)} MB · 720×1280 WebM.</p>
+    <div class="row" style="margin:14px 0"><button class="btn pri" data-save="${r.name}">${ic("download")} Download</button><button class="btn" id="again">Make another</button><button class="btn" data-go="exports">Open My Exports</button></div>
+    <div class="note"><b>Saving.</b> Download asks you to confirm the file name. If it does nothing in your view, press and hold the video and choose Save video.</div></div>
+    <div class="prev"><video src="${r.url}" controls playsinline></video></div></div></div>`);
+    $("#again").onclick=()=>{S.result=null;S.step=0;show()};
+  }
+  show();
+}
+["split","editor","blur"].forEach(k=>VIEWS[k]=()=>wizard(k));
+
+/* texts video */
+VIEWS.texts=()=>{
+  const S=W.texts||(W.texts={contact:"Maya",bg:"neon",result:null,lines:"them: did you see the video I sent?\nme: the one with the cat?\nthem: no the one about the new app\nme: wait, it exports captions automatically?\nthem: in under a minute"});
+  function show(){
+    runCleanups();
+    if(S.result){const r=S.result;view().innerHTML=head("Texts Video")+`<div class="panel"><h2 style="font-size:22px;margin-bottom:12px">Your video is ready</h2><div class="two"><div><p class="hint">${fmt(r.dur)} · ${(r.size/1048576).toFixed(1)} MB · saved to My Exports.</p><div class="row" style="margin:14px 0"><button class="btn pri" data-save="${r.name}">${ic("download")} Download</button><button class="btn" id="again">Edit messages</button></div><div class="note"><b>Saving.</b> If Download does nothing, press and hold the video and choose Save video.</div></div><div class="prev"><video src="${r.url}" controls playsinline></video></div></div></div>`;$("#again").onclick=()=>{S.result=null;show()};return}
+    view().innerHTML=head("Texts Video","Write a conversation and export it as an animated chat over a background.")+`<div class="panel"><div class="two"><div>
+     <label class="f">Contact name<input type="text" id="contact" value="${esc(S.contact)}"></label>
+     <label class="f">Messages<textarea id="lines" style="min-height:170px">${esc(S.lines)}</textarea></label><p class="hint" style="margin-bottom:14px">One message per line. Start with <span class="mono">me:</span> or <span class="mono">them:</span>. A new message appears every 1.5 seconds.</p>
+     <div class="bgs" style="grid-template-columns:repeat(4,minmax(0,1fr))">${Object.entries(BG).map(([id,b])=>`<button class="bg" data-bg="${id}" aria-pressed="${S.bg===id}"><b>${b.name}</b></button>`).join("")}</div>
+     <div class="foot"><span></span><button class="btn pri" id="gen">${ic("spark")} Generate video</button></div></div>
+     <div class="prev"><canvas id="pv" width="300" height="533"></canvas></div></div></div>`;
+    loadFonts();startPreview($("#pv"),makeTextsScene(S));
+    $("#contact").oninput=e=>S.contact=e.target.value;$("#lines").oninput=e=>S.lines=e.target.value;
+    $$(".bg").forEach(b=>b.onclick=()=>{S.bg=b.dataset.bg;$$(".bg").forEach(x=>x.setAttribute("aria-pressed",x===b))});
+    $("#gen").onclick=async()=>{runCleanups();const r=await generate(makeTextsScene(S),"Texts with "+(S.contact||"contact"),"Texts Video");if(r){S.result=r}show()};
+  }
+  show();
+};
+
+/* voiceover (browser speech) */
+VIEWS.voice=()=>{
+  view().innerHTML=head("AI Voiceover","Preview a script with the voices installed on your device.")+`<div class="panel"><div class="two"><div>
+   <label class="f">Script<textarea id="vtext" style="min-height:150px">Stop scrolling. In the next thirty seconds I will show you how to turn one clip into a finished short.</textarea></label>
+   <label class="f">Voice<select id="vsel"></select></label>
+   <label class="f">Speed <span class="mono" id="vrv">1.0x</span><input type="range" id="vrate" min="0.6" max="1.6" step="0.1" value="1"></label>
+   <label class="f">Pitch <span class="mono" id="vpv">1.0</span><input type="range" id="vpitch" min="0.5" max="1.5" step="0.1" value="1"></label>
+   <div class="row"><button class="btn pri" id="vplay">${ic("play")} Play</button><button class="btn" id="vstop">Stop</button></div></div>
+   <div class="note"><b>Preview only.</b> Your browser speaks the text but cannot save the audio as a file. Exportable voices need a text-to-speech service on a server.</div></div></div>`;
+  const sel=$("#vsel"),ok=!!window.speechSynthesis;
+  const fill=()=>{const vs=speechSynthesis.getVoices();sel.innerHTML=vs.length?vs.map((v,i)=>`<option value="${i}">${esc(v.name)} (${v.lang})</option>`).join(""):'<option value="-1">Default voice</option>'};
+  if(ok){fill();speechSynthesis.onvoiceschanged=fill}else{toast("This browser has no speech synthesis.")}
+  $("#vrate").oninput=e=>$("#vrv").textContent=(+e.target.value).toFixed(1)+"x";
+  $("#vpitch").oninput=e=>$("#vpv").textContent=(+e.target.value).toFixed(1);
+  $("#vplay").onclick=()=>{if(!ok)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance($("#vtext").value);const v=speechSynthesis.getVoices()[+sel.value];if(v)u.voice=v;u.rate=+$("#vrate").value;u.pitch=+$("#vpitch").value;speechSynthesis.speak(u)};
+  $("#vstop").onclick=()=>ok&&speechSynthesis.cancel();
+  cleanups.push(()=>ok&&speechSynthesis.cancel());
+};
+
+/* brainstorm (templates) */
+VIEWS.brain=()=>{
+  const P=["Nobody tells beginners this about {n}.","I tried {n} for 30 days. Here is what changed.","Stop doing {n} like this.","3 {n} mistakes that cost you months.","The {n} advice that finally clicked for me.","If I started {n} again today, I would do this first.","Why most people quit {n} in week two.","The cheapest way to get better at {n}.","{n} in 60 seconds, no fluff.","What I wish I knew before {n}."];
+  view().innerHTML=head("AI Brainstorm","Hook lines for the first three seconds of a short.")+`<div class="panel"><label class="f">Your niche or topic<input type="text" id="niche" value="video editing"></label><div class="row"><button class="btn pri" id="mk">${ic("bulb")} Generate hooks</button></div><div class="lst" id="hooks" style="margin-top:16px"></div><div class="note" style="margin-top:16px"><b>Template based.</b> These hooks come from proven patterns filled with your topic. Connect a language model to get ideas written from scratch.</div></div>`;
+  const run=()=>{const n=$("#niche").value.trim()||"your niche";const arr=P.map(p=>p.replace("{n}",n));for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}
+   $("#hooks").innerHTML=arr.slice(0,6).map(h=>`<div class="item"><div><h3>${esc(h)}</h3></div><button class="btn" data-copy="${esc(h)}">Copy</button></div>`).join("")};
+  $("#mk").onclick=run;run();
+  $("#hooks").onclick=e=>{const b=e.target.closest("[data-copy]");if(!b)return;const t=b.dataset.copy;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Copied"),()=>toast("Select the text and copy it manually"))};
+};
+
+/* library pages */
+VIEWS.projects=()=>{
+  view().innerHTML=head("My Projects","Videos you generated with Hoxjad AI. Titles are kept in this browser.")+(projects.length?`<div class="lst">${projects.map(p=>`<div class="item"><div><h3>${esc(p.title)}</h3><small>${esc(p.type)} · ${fmt(p.dur)} · ${new Date(p.date).toLocaleString()}</small></div><button class="btn" data-del="${p.id}">Remove</button></div>`).join("")}</div>`:`<div class="empty">No projects yet. Make your first one in <button class="btn" data-go="split" style="margin-left:6px">Split Video</button></div>`);
+  view().onclick=e=>{const b=e.target.closest("[data-del]");if(b){projects=projects.filter(p=>String(p.id)!==b.dataset.del);store.set("hx_proj",projects);VIEWS.projects()}};
+};
+VIEWS.exports=()=>{
+  view().innerHTML=head("My Exports","Finished videos from this session. Files stay in memory until you close the tab, so save the ones you want.")+(exportsList.length?`<div class="lst">${exportsList.map(x=>`<div class="item"><video src="${x.url}" controls playsinline></video><div><h3>${esc(x.name)}</h3><small>${esc(x.type)} · ${fmt(x.dur)} · ${(x.size/1048576).toFixed(1)} MB</small></div><button class="btn pri" data-save="${x.name}">${ic("download")} Download</button></div>`).join("")}</div>`:`<div class="empty">Nothing exported in this session yet.</div>`);
+};
+VIEWS.assets=()=>{
+  view().innerHTML=head("My Assets","Clips and backgrounds you uploaded in this session.")+(assets.length?`<div class="lst">${assets.map(a=>`<div class="item"><video src="${a.url}" muted playsinline preload="metadata"></video><div><h3>${esc(a.name)}</h3><small>${a.type} · ${(a.size/1048576).toFixed(1)} MB</small></div></div>`).join("")}</div>`:`<div class="empty">No uploads yet. Files you add in the Create tools appear here.</div>`);
+};
+VIEWS.affiliate=()=>{
+  let code=store.get("hx_ref",null);if(!code){code="HX"+Math.random().toString(36).slice(2,7).toUpperCase();store.set("hx_ref",code)}
+  view().innerHTML=head("Affiliate","Share your link and earn when people subscribe.")+`<div class="panel"><label class="f">Your referral link<input type="text" id="ref" readonly value="https://hoxjad.ai/r/${code}"></label><div class="row"><button class="btn pri" id="cp">Copy link</button></div>
+  <div class="cards" style="margin-top:18px"><div class="card"><span class="eyebrow">Clicks</span><h3 class="mono">0</h3></div><div class="card"><span class="eyebrow">Sign-ups</span><h3 class="mono">0</h3></div><div class="card"><span class="eyebrow">Earned</span><h3 class="mono">$0.00</h3></div></div>
+  <div class="note" style="margin-top:16px"><b>Not live yet.</b> Link tracking and payouts need accounts and a payments provider. This page shows where they will sit.</div></div>`;
+  $("#cp").onclick=()=>{const t=$("#ref").value;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Link copied"),()=>{$("#ref").select();toast("Press Ctrl+C to copy")})};
+};
+
+const BACKEND={
+ story:["Story Video","Describe a topic and get a scripted video with matching visuals.","A language model for the script, a text-to-speech service for narration, and stock or generated footage."],
+ gpt:["ChatGPT Video","Turn a prompt into a series of images stitched into a video.","An image generation API and a server to queue and render the clips."],
+ voicevid:["Voiceover Video","Paste a script and get a narrated video with captions.","A text-to-speech service that returns an audio file, plus the Split Video renderer already included."],
+ aiimg:["AI Images","Generate images from a text prompt.","An image generation API key and a small server that keeps it private."],
+ avatar:["AI Avatars","Make a talking presenter from a photo and a script.","A talking-head video model and GPU rendering, usually through a paid API."],
+ ytdl:["YT Downloader","Save a video from a link.","A server that fetches the file. Browsers block this directly, and you must only download content you own or have permission to use."],
+ ttdl:["TikTok Downloader","Save a video from a link.","A server that fetches the file. Browsers block this directly, and you must only download content you own or have permission to use."]
+};
+VIEWS.backend=id=>{
+  const [t,d,need]=BACKEND[id]||["Coming soon","",""];
+  view().innerHTML=head(t,d)+`<div class="panel"><label class="f">Prompt or link<input type="text" disabled placeholder="Available once the service is connected"></label><button class="btn pri" disabled>Generate</button>
+  <div class="note" style="margin-top:16px"><b>Needs a backend service.</b> ${need}</div></div>`;
+};
+
+/* ---------- shell ---------- */
+/* ---------- plans: no free tier, every account pays ---------- */
+const PLANS=[
+ {id:"starter",name:"Starter",m:25,hours:5,credits:400,voice:60,images:150,storage:25},
+ {id:"creator",name:"Creator",m:50,hours:15,credits:1200,voice:180,images:500,storage:100,hot:1},
+ {id:"studio",name:"Studio",m:99,hours:40,credits:4000,voice:600,images:1500,storage:500}
+];
+let plan=store.get("hx_plan",null), cycle=store.get("hx_cycle","m");
+const money=n=>"$"+n.toLocaleString("en-US");
+const per=p=>cycle==="y"?Math.round(p.m*.8):p.m;
+const yearTotal=p=>Math.round(p.m*12*.8);
+function pricingHTML(){
+  return `<div class="cyc"><button class="sw" role="switch" aria-checked="${cycle==="y"}" data-cycle aria-label="Yearly billing"><i></i></button><b>Yearly billing</b><span class="save">Save 20%</span></div>
+  <p class="hint" style="text-align:center;margin-top:6px">${cycle==="y"?"Billed once a year. Cancel anytime.":"Switch to yearly and save 20%."}</p>
+  <div class="pcs">${PLANS.map(p=>`<div class="pc ${p.hot?"hot":""}">${p.hot?'<span class="badge">Most popular</span>':""}<h3>${p.name}</h3>
+   <div class="price">${cycle==="y"?`<s>${money(p.m)}</s>`:""}<b>${money(per(p))}</b><span>/mo</span></div>
+   <p class="hint">${cycle==="y"?`${money(yearTotal(p))} billed yearly. Save ${money(p.m*12-yearTotal(p))}`:"Billed monthly. Cancel anytime."}</p>
+   <div class="kpis"><div><b>${p.credits.toLocaleString("en-US")}</b><small>credits / mo</small></div><div><b>${p.hours} hours</b><small>export / mo</small></div></div>
+   <ul>${[`${p.voice} minutes of AI voiceover`,`${p.images.toLocaleString("en-US")} AI images`,`${p.storage}GB storage`,"All Hoxjad video tools"].map(f=>`<li>${ic("check")}<span>${f}</span></li>`).join("")}</ul>
+   <button class="btn wide ${p.hot?"pri":""}" data-plan="${p.id}" ${plan===p.id?"disabled":""}>${plan===p.id?"Current plan":(plan?"Switch to ":"Choose ")+p.name}</button></div>`).join("")}</div>`;
+}
+const repaintPricing=()=>$$("[data-pricing]").forEach(el=>el.innerHTML=pricingHTML());
+function showGate(){
+  document.body.classList.add("locked");const g=$("#gate");g.hidden=false;
+  g.innerHTML=`<div class="gate-in"><div class="brand"><svg width="30" height="30" viewBox="0 0 32 32" fill="none"><path d="M16 2l12 7v14l-12 7L4 23V9z" fill="var(--accent)"/><path d="M11 10v12M21 10v12M11 16h10" stroke="var(--accent-ink)" stroke-width="3" stroke-linecap="round"/></svg>Hoxjad<small>AI</small></div>
+  <div><span class="eyebrow">Plans</span><h1 style="margin-top:6px">Pick a plan to start creating.</h1><p class="hint" style="margin-top:8px;max-width:56ch">Every Hoxjad AI account is paid. Choose the one that fits how many videos you make and change it any time.</p></div>
+  <div data-pricing>${pricingHTML()}</div>
+  <div class="trust"><span>Cancel anytime from settings</span><span>Credits reset monthly</span><span>Prices in USD</span></div>
+  <div class="note"><b>Checkout is not connected in this build.</b> Choosing a plan switches it on without charging anyone. Add Stripe before you launch.</div></div>`;
+}
+function choosePlan(id){
+  const p=PLANS.find(x=>x.id===id);if(!p)return;
+  plan=id;store.set("hx_plan",id);setMinutes(p.hours*60);
+  $("#gate").hidden=true;$("#gate").innerHTML="";document.body.classList.remove("locked");hideModal();
+  toast(p.name+" plan active");go(cur);
+}
+document.addEventListener("click",e=>{
+  if(e.target.closest("[data-cycle]")){cycle=cycle==="y"?"m":"y";store.set("hx_cycle",cycle);repaintPricing();return}
+  const b=e.target.closest("[data-plan]");if(b)choosePlan(b.dataset.plan);
+});
+function upgrade(){
+  showModal(`<div class="row" style="justify-content:space-between"><h2 style="font-size:26px">Choose a plan</h2><button class="btn icon" id="cx" aria-label="Close">${ic("x")}</button></div><div data-pricing>${pricingHTML()}</div>`);
+  $(".dlg").classList.add("big");$("#cx").onclick=hideModal;
+}
+$("#modal").addEventListener("click",e=>{if(e.target.id==="modal"&&!$(".ring"))hideModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$(".ring"))hideModal()});
+$("#upgBtn").onclick=upgrade;$("#minChip").onclick=upgrade;
+$("#menuBtn").innerHTML=ic("menu");
+$("#menuBtn").onclick=()=>{$("#side").classList.add("open");$("#scrim").classList.add("open")};
+$("#scrim").onclick=()=>{$("#side").classList.remove("open");$("#scrim").classList.remove("open")};
+$("#themeBtn").innerHTML=ic("moon");
+$("#themeBtn").onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches;r.dataset.theme=dark?"light":"dark";store.set("hx_theme",r.dataset.theme)};
+{const th=store.get("hx_theme",null);if(th)document.documentElement.dataset.theme=th}
+setMinutes(minutes);
+go("dashboard");
+if(!plan)showGate();
+</script>
+
+</body></html>
